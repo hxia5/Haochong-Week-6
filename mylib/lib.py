@@ -9,8 +9,8 @@ import pandas as pd
 from databricks import sql
 from dotenv import load_dotenv
 
-def extract(url1="https://github.com/fivethirtyeight/data/blob/15f210532b2a642e85738ddefa7a2945d47e2585/world-cup-predictions/wc-20140609-140000.csv",
-            url2="https://github.com/fivethirtyeight/data/blob/15f210532b2a642e85738ddefa7a2945d47e2585/world-cup-predictions/wc-20140613-205820.csv", 
+def extract(url1="https://github.com/fivethirtyeight/data/blob/15f210532b2a642e85738ddefa7a2945d47e2585/world-cup-predictions/wc-20140609-140000.csv?raw=True",
+            url2="https://github.com/fivethirtyeight/data/blob/15f210532b2a642e85738ddefa7a2945d47e2585/world-cup-predictions/wc-20140613-205820.csv?raw=True", 
             file_path1="dataset/wc-20140609-140000.csv", 
             file_path2="dataset/wc-20140613-205820.csv",
             directory="dataset"):
@@ -24,10 +24,10 @@ def extract(url1="https://github.com/fivethirtyeight/data/blob/15f210532b2a642e8
     return file_path1, file_path2
 
 """
-Transforms and Loads data into the local SQLite3 database
+Transforms and Loads data into the databricks database
 """
 
-#load the csv file and insert into a new sqlite3 database
+#load the csv file and insert into a databricks database
 def load(dataset1="dataset/wc-20140609-140000.csv",
         dataset2="dataset/wc-20140613-205820.csv"):
     """"Transforms and Loads data into the Databricks database"""
@@ -122,20 +122,24 @@ def complex_query():
     ) as connection:
         c = connection.cursor()
         c.execute("""SELECT t1.group,
-                AVG(spi) as avg_soccer_power_in_group,
-                COUNT(win) as win_possibility
+                AVG(t1.spi) as avg_soccer_power_in_group,
+                COUNT(t1.win) as win_possibility_0609,
+                COUNT(t2.win) as win_possibility_0613
             FROM default.wc609 t1
             JOIN default.wc613 t2 ON t1.id = t2.id
             GROUP BY t1.group, t2.group
-            ORDER BY win_possibility DESC
+            ORDER BY win_possibility_0609 DESC
             LIMIT 3""")
         result = c.fetchall()
+        c.close()
 
     save_qr("""SELECT t1.group,
-                AVG(spi) as avg_soccer_power_in_group,
-                COUNT(win) as win_possibility
+                AVG(t1.spi) as avg_soccer_power_in_group,
+                COUNT(t1.win) as win_possibility_0609,
+                COUNT(t2.win) as win_possibility_0613
             FROM default.wc609 t1
             JOIN default.wc613 t2 ON t1.id = t2.id
             GROUP BY t1.group, t2.group
-            ORDER BY win_possibility DESC
+            ORDER BY win_possibility_0609 DESC
             LIMIT 3""", result)
+    
