@@ -7,97 +7,137 @@ import requests
 import sqlite3
 import csv
 import os
+import pandas as pd
+from databricks import sql
+from dotenv import load_dotenv
 
-
-def extract(url="https://catalogue.data.wa.gov.au/dataset/f39087e2-2885-473e-bc62-ca610cd94340/resource/96c892f3-b387-410c-80d0-e4dcec68e6f2/download/25ktopomapseriesindex.csv", 
-            file_path="/Users/xiahaochong/Desktop/IDS 706 DES/"\
-            "Haochong-Week-5/25ktopomapseriesindex.csv"):
+def extract(url1="https://github.com/fivethirtyeight/data/blob/15f210532b2a642e85738ddefa7a2945d47e2585/world-cup-predictions/wc-20140609-140000.csv",
+            url2="https://github.com/fivethirtyeight/data/blob/15f210532b2a642e85738ddefa7a2945d47e2585/world-cup-predictions/wc-20140613-205820.csv", 
+            file_path1="dataset/wc-20140609-140000.csv", 
+            file_path2="dataset/wc-20140613-205820.csv",
+            directory="dataset"):
     """"Extract a url to a file path"""
-    with requests.get(url) as r:
-        with open(file_path, 'wb') as f:
+    with requests.get(url1) as r:
+        with open(file_path1, 'wb') as f:
             f.write(r.content)
-    return file_path
+    with requests.get(url2) as r:
+        with open(file_path2, 'wb') as f:
+            f.write(r.content)
+    return file_path1, file_path2
 
 """
 Transforms and Loads data into the local SQLite3 database
 """
 
 #load the csv file and insert into a new sqlite3 database
-def load(dataset="/Users/xiahaochong/Desktop/IDS 706 DES/"\
-            "Haochong-Week-5/25ktopomapseriesindex.csv"):
-    """"Transforms and Loads data into the local SQLite3 database"""
-
+def load(dataset1="dataset/wc-20140609-140000.csv",
+        dataset2="dataset/wc-20140613-205820.csv"):
+    """"Transforms and Loads data into the Databricks database"""
+    df1 = pd.read_csv(dataset1, delimiter=",", skiprows=1)
+    df2 = pd.read_csv(dataset2, delimiter=",", skiprows=1)
     #prints the full working directory and path
-    print(os.getcwd())
-    payload = csv.reader(open(dataset, newline=''), delimiter=',')
-    conn = sqlite3.connect('ktopomapseriesindexDB.db')
-    c = conn.cursor()
-    c.execute("DROP TABLE IF EXISTS indexs")
-    c.execute('''CREATE TABLE IF NOT EXISTS indexs (
-                name_cap_2 TEXT,
-                num_rom_ca TEXT PRIMARY KEY,
-                Shape_Leng INTEGER,
-                Shape_Area INTEGER
-            )''')
-    #insert
-    c.executemany("INSERT INTO indexs VALUES (?, ?, ?, ?)", payload)
-    conn.commit()
-    conn.close()
-    return "ktopomapseriesindexDB.db"
+    load_dotenv()
+    host = os.getenv("SERVER_HOSTNAME")
+    token = os.getenv("TOKEN")
+    path = os.getenv("HTTP_PATH")
+    with sql.connect(
+        server_hostname=host,
+        access_token=token,
+        http_path=path,
+    ) as connection:
+        c = connection.cursor()
+        c.execute("SHOW TABLES FROM default LIKE 'wc609'")
+        result = c.fetchall() 
+        if not result:
+            c.execute(
+                """
+                CREATE TABLE IF NOT EXISTS wc609 (
+                    id int,
+                    country string,
+                    country_id string,
+                    group string,
+                    spi int,
+                    spi_offense int,
+                    spi_defense int,
+                    win_group int,
+                    sixteen int,
+                    quarter int,
+                    semi int,
+                    cup int,
+                    win int
+                )
+            """
+            )
+            for _, row in df1.iterrows():
+                convert = (_,) + tuple(row)
+                c.execute(f"INSERT INTO wc609 VALUES {convert}")
+        c.execute("SHOW TABLES FROM default LIKE 'wc613'")
+        result = c.fetchall() 
+        if not result:
+            c.execute(
+                """
+                CREATE TABLE IF NOT EXISTS wc613 (
+                    id int,
+                    country string,
+                    country_id string,
+                    group string,
+                    spi int,
+                    spi_offense int,
+                    spi_defense int,
+                    win_group int,
+                    sixteen int,
+                    quarter int,
+                    semi int,
+                    cup int,
+                    win int
+                )
+            """
+            )
+            for _, row in df2.iterrows():
+                convert = (_,) + tuple(row)
+                c.execute(f"INSERT INTO wc613 VALUES {convert}")
+        c.close()
+    return "success"
 
-"""CRUD"""
+# save query record
+qr = "query_record.md"
 
-def connect():
-    # Connect to my DB
-    conn = sqlite3.connect('ktopomapseriesindexDB.db')
-    c = conn.cursor()
-    return c, conn
 
-def create(c):
-    c.execute('''CREATE TABLE IF NOT EXISTS indexs (
-                name_cap_2 TEXT,
-                num_rom_ca TEXT PRIMARY KEY,
-                Shape_Leng INTEGER,
-                Shape_Area INTEGER
-            )''')
-    
-def insert(c, conn, name_cap_2, num_rom_ca, Shape_Leng, Shape_Area):
-    c.execute("""INSERT INTO indexs (name_cap_2, 
-              num_rom_ca, 
-              Shape_Leng, 
-              Shape_Area) VALUES (?, ?, ?, ?)""", 
-              (name_cap_2, num_rom_ca, Shape_Leng, Shape_Area))
-    conn.commit()
-
-def read(c):
-    c.execute("SELECT * FROM indexs")
-    indexs = c.fetchall()
-    return indexs
-
-def update_Shape_Leng(c, conn, Shape_Leng, num_rom_ca):
-    c.execute("UPDATE indexs SET Shape_Leng = ? WHERE  num_rom_ca = ?", 
-              (Shape_Leng, num_rom_ca))
-    conn.commit()
-
-def delete(c, conn, num_rom_ca):
-    c.execute("DELETE FROM indexs WHERE  num_rom_ca = ?", (num_rom_ca,))
-    conn.commit()
+def save_qr(query, result="none"):
+    """save in a markdown"""
+    with open(qr, "a") as file:
+        file.write(f"```sql\n{query}\n```\n\n")
+        file.write(f"```response from databricks\n{result}\n```\n\n")
 
 """Query the database"""
 
-def query1(c):
-    # 1. Query to count the number of indexs in the table
-    c.execute("SELECT COUNT(*) FROM indexs")
-    count = c.fetchone()[0]
-    print(f"Total number of indexs: {count}")
+def complex_query():
+    """do query by input"""
+    load_dotenv()
+    host = os.getenv("SERVER_HOSTNAME")
+    token = os.getenv("TOKEN")
+    path = os.getenv("HTTP_PATH")
+    with sql.connect(
+        server_hostname=host,
+        access_token=token,
+        http_path=path,
+    ) as connection:
+        c = connection.cursor()
+        c.execute("""SELECT t1.server, t1.opponent,
+                AVG(spi) as avg_soccer_power_in_group,
+                COUNT(win) as win_possibility
+            FROM default.wc609 t1
+            JOIN default.wc613 t2 ON t1.id = t2.id
+            GROUP BY t1.group, t2.group
+            ORDER BY win_possibility DESC
+            LIMIT 3""")
+        result = c.fetchall()
 
-def query2(c):
-    # 2. Query to get Shape_Leng less than 56140
-    c.execute("SELECT * FROM indexs WHERE Shape_Leng < ?", (56140,))
-    q_indexs = c.fetchall()
-    print("indexs have Shape_Leng less than 56140:")
-    for i in q_indexs:
-        print(f"""name_cap_2: {i[0]}, 
-              num_rom_ca: {i[1]}, 
-              Shape_Leng: {i[2]}, 
-              Shape_Area: {i[3]}""")
+    save_qr(f"{"""SELECT t1.server, t1.opponent,
+                AVG(spi) as avg_soccer_power_in_group,
+                COUNT(win) as win_possibility
+            FROM default.wc609 t1
+            JOIN default.wc613 t2 ON t1.id = t2.id
+            GROUP BY t1.group, t2.group
+            ORDER BY win_possibility DESC
+            LIMIT 3"""}", result)
