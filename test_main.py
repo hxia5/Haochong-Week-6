@@ -38,3 +38,8 @@ def test_query():
     )
     assert result.returncode == 0
     assert "Transforming data..." in result.stdout
+
+if __name__ == "__main__":
+    test_extract()
+    test_load()
+    test_query()
