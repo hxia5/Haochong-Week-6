@@ -27,8 +27,8 @@ all: install lint test format deploy
 extract:
 	python main.py extract
 
-transform_load: 
-	python main.py transform_load
+load: 
+	python main.py load
 
 query:
 	python main.py general_query "SELECT t1.server, t1.opponent, AVG(spi) as avg_soccer_power_in_group, COUNT(win) as win_possibility FROM default.wc609 t1 JOIN default.wc613 t2 ON t1.id = t2.id GROUP BY t1.group, t2.group ORDER BY win_possibility DESC LIMIT 3"
