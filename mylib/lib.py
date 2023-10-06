@@ -4,8 +4,6 @@ Extract a dataset from a URL
 food dataset
 """
 import requests
-import sqlite3
-import csv
 import os
 import pandas as pd
 from databricks import sql
