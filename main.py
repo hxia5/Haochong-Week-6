@@ -4,8 +4,6 @@ ETL-Query script
 
 from mylib.lib import extract
 from mylib.lib import load
-import sys
-import argparse
 from mylib.lib import complex_query
 
 # Extract
