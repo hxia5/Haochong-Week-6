@@ -121,7 +121,7 @@ def complex_query():
         http_path=path,
     ) as connection:
         c = connection.cursor()
-        c.execute("""SELECT t1.server, t1.opponent,
+        c.execute("""SELECT t1.group,
                 AVG(spi) as avg_soccer_power_in_group,
                 COUNT(win) as win_possibility
             FROM default.wc609 t1
@@ -131,7 +131,7 @@ def complex_query():
             LIMIT 3""")
         result = c.fetchall()
 
-    save_qr("""SELECT t1.server, t1.opponent,
+    save_qr("""SELECT t1.group,
                 AVG(spi) as avg_soccer_power_in_group,
                 COUNT(win) as win_possibility
             FROM default.wc609 t1
