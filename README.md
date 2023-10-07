@@ -38,7 +38,7 @@ I didn't meet too many trouble for other parts. I write test in `test_main.py` f
 
 ![Alt text](<截屏2023-10-07 下午3.23.45.png>)
 
-### query and result(you can also see in query_record):
+### Query and result(you can also see in query_record):
 Here is my query:
 
 ```
@@ -52,10 +52,10 @@ SELECT t1.group,
             ORDER BY win_possibility_0609 DESC
             LIMIT 3
 ```
-
+* Explanation:
 The purpose is to find out which group has the largest possibility to win the cup base on the prediction of Jun.9th and check if there is any change on Jun.13th. Hence, I joined two days' prediction, group them by the group of world cup, sum the possibility of win for all teams in the group and ordered by the possibility of Jun.9th. I also output the possibility od Jun.13th as comparison and the average soccer power as additional information.
 
-Here is the result:
+* Expected result:
 
 ```response from databricks
 [Row(group='b', avg_soccer_power_in_group=81.5, win_possibility_0609=4, win_possibility_0613=4), Row(group='c', avg_soccer_power_in_group=78.0, win_possibility_0609=4, win_possibility_0613=4), Row(group='f', avg_soccer_power_in_group=78.75, win_possibility_0609=4, win_possibility_0613=4)]
