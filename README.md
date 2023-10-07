@@ -3,7 +3,7 @@ This is a repo template for course 706_Data_Engineering Week 6 Mini Project. Sin
 
 Important file:
 * `Makefile`
-*`cicd.yml`
+* `cicd.yml`
 * `lib.py`
 * `main.py`
 * `.env`(which is hidden)
@@ -17,8 +17,8 @@ Important file:
 - Provide an explanation for what the query is doing and the expected results
 
 ## Preparation 
-1. open codespaces and vscode
-2. wait for container to be built with requiremnts.txt installed
+1. Open codespaces and vscode
+2. Wait for container to be built with requiremnts.txt installed
 
 ## Set up for Databricks
 After logging in Azure Education, I create a Azure Databricks. After launching the 
@@ -41,7 +41,8 @@ I didn't meet too many trouble for other parts. I write test in `test_main.py` f
 ### query and result(you can also see in query_record):
 Here is my query:
 
-```SELECT t1.group,
+```
+SELECT t1.group,
                 AVG(t1.spi) as avg_soccer_power_in_group,
                 COUNT(t1.win) as win_possibility_0609,
                 COUNT(t2.win) as win_possibility_0613
@@ -49,7 +50,8 @@ Here is my query:
             JOIN default.wc613 t2 ON t1.id = t2.id
             GROUP BY t1.group, t2.group
             ORDER BY win_possibility_0609 DESC
-            LIMIT 3```
+            LIMIT 3
+```
 
 The purpose is to find out which group has the largest possibility to win the cup base on the prediction of Jun.9th and check if there is any change on Jun.13th. Hence, I joined two days' prediction, group them by the group of world cup, sum the possibility of win for all teams in the group and ordered by the possibility of Jun.9th. I also output the possibility od Jun.13th as comparison and the average soccer power as additional information.
 
