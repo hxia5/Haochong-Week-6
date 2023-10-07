@@ -20,6 +20,9 @@ Important file:
 1. open codespaces and vscode
 2. wait for container to be built with requiremnts.txt installed
 
+## Set up for Databricks
+After logging in Azure Education, I create a Azure Databricks. After launching the 
+workspace, I got a database called "default". Then I found the information I need: server hostname, http path and my token. I put them in `.env` and use those three variables in my `load` function to build connection with Databricks. In addition, I also put those three variables in the `Action` under the `Secrets and variables` in the `Setting` of the repo. I create two table in the database. 
 ## Check format and test errors
 1. Format code with Python black by using `make format`
 
@@ -29,24 +32,31 @@ Important file:
 
 In this project, I got the first failure while import my csv file. Panda can't read it. After checking the error message and my csv file, I found out that it's not raw. After putting `?raw=True` after the url, I fix this problem. 
 
-I was confused at first, and you can see I create several ways but all failed. After google this I noticed that it was because I use the number as the fisrt letter of my database, which is not allowed. I fixed this by delete "25".
+![Alt text](<截屏2023-10-07 下午3.06.14.png>)
 
+I didn't meet too many trouble for other parts. I write test in `test_main.py` for three functions, and I got them all pass:.
 
-I didn't meet too many trouble for other parts.
+![Alt text](<截屏2023-10-07 下午3.23.45.png>)
 
+### query and result(you can also see in query_record):
+Here is my query:
 
+```SELECT t1.group,
+                AVG(t1.spi) as avg_soccer_power_in_group,
+                COUNT(t1.win) as win_possibility_0609,
+                COUNT(t2.win) as win_possibility_0613
+            FROM default.wc609 t1
+            JOIN default.wc613 t2 ON t1.id = t2.id
+            GROUP BY t1.group, t2.group
+            ORDER BY win_possibility_0609 DESC
+            LIMIT 3```
 
-### result:
+The purpose is to find out which group has the largest possibility to win the cup base on the prediction of Jun.9th and check if there is any change on Jun.13th. Hence, I joined two days' prediction, group them by the group of world cup, sum the possibility of win for all teams in the group and ordered by the possibility of Jun.9th. I also output the possibility od Jun.13th as comparison and the average soccer power as additional information.
 
+Here is the result:
 
-
-
-For the test, I didn't test for function like `connect`, since they are just for the connection. If they can't work, all other part won't be able to run, which means they are definitely fine.
-
-I write test in `test_main.py` for CRUD functions. I use function`fetchone()` to fetch the row I want, and then compare the result with `None` to see whether the operation happened. I got them all pass:
-
-
-
-![Alt text](<截屏2023-09-28 下午1.15.28.png>)
+```response from databricks
+[Row(group='b', avg_soccer_power_in_group=81.5, win_possibility_0609=4, win_possibility_0613=4), Row(group='c', avg_soccer_power_in_group=78.0, win_possibility_0609=4, win_possibility_0613=4), Row(group='f', avg_soccer_power_in_group=78.75, win_possibility_0609=4, win_possibility_0613=4)]
+```
 
 
