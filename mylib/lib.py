@@ -54,15 +54,15 @@ def load(dataset1="dataset/wc-20140609-140000.csv",
                     country string,
                     country_id string,
                     group string,
-                    spi int,
-                    spi_offense int,
-                    spi_defense int,
-                    win_group int,
-                    sixteen int,
-                    quarter int,
-                    semi int,
-                    cup int,
-                    win int
+                    spi float,
+                    spi_offense float,
+                    spi_defense float,
+                    win_group float,
+                    sixteen float,
+                    quarter float,
+                    semi float,
+                    cup float,
+                    win float
                 )
             """
             )
@@ -79,15 +79,15 @@ def load(dataset1="dataset/wc-20140609-140000.csv",
                     country string,
                     country_id string,
                     group string,
-                    spi int,
-                    spi_offense int,
-                    spi_defense int,
-                    win_group int,
-                    sixteen int,
-                    quarter int,
-                    semi int,
-                    cup int,
-                    win int
+                    spi float,
+                    spi_offense float,
+                    spi_defense float,
+                    win_group float,
+                    sixteen float,
+                    quarter float,
+                    semi float,
+                    cup float,
+                    win float
                 )
             """
             )
