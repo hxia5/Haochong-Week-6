@@ -23,6 +23,9 @@ Important file:
 ## Set up for Databricks
 After logging in Azure Education, I create a Azure Databricks. After launching the 
 workspace, I got a database called "default". Then I found the information I need: server hostname, http path and my token. I put them in `.env` and use those three variables in my `load` function to build connection with Databricks. In addition, I also put those three variables in the `Action` under the `Secrets and variables` in the `Setting` of the repo. I create two table in the database. 
+
+![Alt text](<截屏2023-10-08 上午12.33.57.png>)
+
 ## Check format and test errors
 1. Format code with Python black by using `make format`
 
